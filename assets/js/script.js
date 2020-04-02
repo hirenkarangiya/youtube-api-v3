@@ -2,12 +2,11 @@
 function tplawesome(e,t){res=e;for(var n=0;n<t.length;n++){res=res.replace(/\{\{(.*?)\}\}/g,function(e,r){return t[n][r]})}return res}
 
 let previouspage = "", nextpage = "";
-let key = "AIzaSyCvpfnEPwSpeIQNAZl_ZhYmAhNJS5I2VZk";
+let key = "your_key";
 let playlistId = "";
 let part = "id,snippet,contentDetails";
 let pageLength = 21;
-
-let username = "shootawaydotcom";
+let username = "enter your youtube user name";
 let channelURL = "https://www.googleapis.com/youtube/v3/channels?key="+key+"&part="+part+"&forUsername="+username;
 let channelID = null;
 
@@ -17,7 +16,7 @@ fetch(channelURL)
         return response.json();
     })
     .then( (response) => {
-        console.log(response);
+        //console.log(response);
         channelID = response.items[0].id;
         playlistId = response.items[0].contentDetails.relatedPlaylists.uploads;
     })
@@ -39,7 +38,7 @@ function getPlaylist(pagetoken=""){
             return response.json();
         })
         .then( (response) => {
-            console.log(response);
+            //console.log(response);
             response.items.forEach( (element) => {
                 $('#app').empty();
                 $.get('./playlistitem.html', function(data){
@@ -48,16 +47,8 @@ function getPlaylist(pagetoken=""){
             });
 
             //Pagetoken value will be append
-            if(response.prevPageToken){
-                previouspage = response.prevPageToken;
-                $('#prevpage').attr('data-id', previouspage);
-                $('#prevpage').attr('disabled', false);
-            } else {
-                $('#prevpage').attr('data-id', '');
-                $('#prevpage').attr('disabled', true);
-            }
-            nextpage = response.nextPageToken;
-            $('#nextpage').attr('data-id', nextpage);
+            pagetokenadd(response);
+            
 
         })
         .finally( () => {
@@ -76,9 +67,9 @@ function getVids(pagetoken=""){
     .then( (response) => {
         return response.json();
     })
-    .then((data) => {
-        console.log(data);
-        data.items.forEach(element => {
+    .then((response) => {
+        //console.log(response);
+        response.items.forEach(element => {
             $('#app').empty();
             let date = moment(element.snippet.publishedAt).format('YYYY-MM-DD');
             let videoId = element.contentDetails.videoId;
@@ -100,22 +91,32 @@ function getVids(pagetoken=""){
         });
         
         //Pagetoken value will be append
-        if(data.prevPageToken){
-            previouspage = data.prevPageToken;
-            $('#prevpage').attr('data-id', previouspage);
-            $('#prevpage').attr('disabled', false);
-        } else {
-            $('#prevpage').attr('data-id', '');
-            $('#prevpage').attr('disabled', true);
-        }
-        nextpage = data.nextPageToken;
-        $('#nextpage').attr('data-id', nextpage);
+        pagetokenadd(response);
     })
     .catch((error) => {
         console.error('Error:', error);
         $('.toast').toast('show');
         $('.toast-body').text(error);
     });
+}
+
+function pagetokenadd(response){
+    if(response.prevPageToken){
+        previouspage = response.prevPageToken;
+        $('#prevpage').attr('data-id', previouspage);
+        $('#prevpage').attr('disabled', false);
+    } else {
+        $('#prevpage').attr('data-id', '');
+        $('#prevpage').attr('disabled', true);
+    }
+    if(response.nextPageToken){
+        nextpage = response.nextPageToken;
+        $('#nextpage').attr('data-id', nextpage);
+        $('#nextpage').attr('disabled', false);
+    } else {
+        $('#nextpage').attr('data-id', '');
+        $('#nextpage').attr('disabled', true);
+    }
 }
 
 $('#nextpage').on('click', function(e){
@@ -175,9 +176,8 @@ function videolightboxpopupHandler(){
                     let dataDict = {};
                     $('#videosLightbox').append('<a class="fancygallery" href="https://www.youtube.com/embed/'+ element.contentDetails.videoId +'?rel=0" rel="gallery"></a>');
                     dataDict['src'] = 'https://www.youtube.com/embed/'+ element.contentDetails.videoId;
-                    //dataDict['opts']['thumb'] = element.snippet.thumbnails.default.url;
                     data.push(dataDict);
-                    console.log(data);
+                    //console.log(data);
                 });
             })
             .finally( () => {
